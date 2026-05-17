@@ -78,7 +78,6 @@ button:hover{
 #canvas{
   width:100%;
   max-width:700px;
-  border:4px solid #ff1f1f;
   background:#333;
 }
 
@@ -168,6 +167,11 @@ function renderCanvas(){
   // 背景
   ctx.fillStyle = '#333338';
   ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // 外側赤枠
+  ctx.strokeStyle = '#ff1f1f';
+  ctx.lineWidth = 20;
+  ctx.strokeRect(0,0,canvas.width,canvas.height);
 
   // 左線
   ctx.fillStyle = '#777';
