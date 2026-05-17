@@ -14,14 +14,13 @@ body{
   background:#111;
   color:#fff;
   font-family:
-    "Hiragino Sans",
     "Yu Gothic UI",
-    "Yu Gothic",
+    "Hiragino Sans",
     sans-serif;
 }
 
 .controls{
-  max-width:720px;
+  max-width:760px;
   margin:auto;
   display:flex;
   flex-direction:column;
@@ -29,7 +28,7 @@ body{
 }
 
 h1{
-  margin:0 0 10px;
+  margin:0 0 12px;
   font-size:28px;
 }
 
@@ -55,12 +54,12 @@ input{
 button{
   background:#e11d2e;
   color:#fff;
-  cursor:pointer;
   font-weight:bold;
+  cursor:pointer;
 }
 
 button:hover{
-  opacity:0.9;
+  opacity:0.92;
 }
 
 .checkbox-row{
@@ -81,8 +80,8 @@ button:hover{
 
 #canvas{
   width:100%;
-  max-width:780px;
-  background:#333;
+  max-width:820px;
+  background:#34343a;
 }
 
 .small{
@@ -100,24 +99,39 @@ button:hover{
 
 <label>
 運転再開見込み
-<input type="text" id="resumeText" value="20時30分頃">
+<input
+  type="text"
+  id="resumeText"
+  value="20時30分頃">
 </label>
 
 <div class="checkbox-row">
-<input type="checkbox" id="showResume" checked>
+
+<input
+  type="checkbox"
+  id="showResume"
+  checked>
+
 <label for="showResume">
 運転再開見込みを表示する
 </label>
+
 </div>
 
 <label>
 原因
-<input type="text" id="reason" value="信号装置故障">
+<input
+  type="text"
+  id="reason"
+  value="信号装置故障">
 </label>
 
 <label>
 状態
-<input type="text" id="status" value="運転見合わせ">
+<input
+  type="text"
+  id="status"
+  value="運転見合わせ">
 </label>
 
 <button onclick="renderCanvas()">
@@ -135,51 +149,77 @@ button:hover{
 </div>
 
 <div class="preview-wrap">
-<canvas id="canvas" width="1400" height="760"></canvas>
+<canvas
+  id="canvas"
+  width="1400"
+  height="760">
+</canvas>
 </div>
 
 <script>
 
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
+const canvas =
+  document.getElementById('canvas');
+
+const ctx =
+  canvas.getContext('2d');
 
 function drawTriangle(){
 
-  ctx.strokeStyle = '#ff2a2a';
-  ctx.lineWidth = 8;
+  ctx.strokeStyle = '#ff2b2b';
+  ctx.lineWidth = 7.5;
 
   ctx.beginPath();
 
-  ctx.moveTo(218,215);
-  ctx.lineTo(98,447);
-  ctx.lineTo(338,447);
+  ctx.moveTo(218,214);
+  ctx.lineTo(101,445);
+  ctx.lineTo(335,445);
 
   ctx.closePath();
+
   ctx.stroke();
 
-  ctx.fillStyle = '#ff2a2a';
+  ctx.fillStyle = '#ff2b2b';
 
   ctx.font =
-    'bold 92px "Yu Gothic UI","Yu Gothic",sans-serif';
+    '700 90px "Yu Gothic UI","Hiragino Sans",sans-serif';
 
-  ctx.fillText('!',205,388);
+  ctx.fillText(
+    '!',
+    203,
+    387
+  );
 
 }
 
-function wrapText(text,x,y,maxWidth,lineHeight){
+function wrapText(
+  text,
+  x,
+  y,
+  maxWidth,
+  lineHeight
+){
 
   let line='';
 
   for(let i=0;i<text.length;i++){
 
-    const testLine = line + text[i];
-    const width = ctx.measureText(testLine).width;
+    const testLine =
+      line + text[i];
+
+    const width =
+      ctx.measureText(testLine).width;
 
     if(width > maxWidth && i > 0){
 
-      ctx.fillText(line,x,y);
+      ctx.fillText(
+        line,
+        x,
+        y
+      );
 
       line = text[i];
+
       y += lineHeight;
 
     }else{
@@ -190,49 +230,73 @@ function wrapText(text,x,y,maxWidth,lineHeight){
 
   }
 
-  ctx.fillText(line,x,y);
+  ctx.fillText(
+    line,
+    x,
+    y
+  );
 
 }
 
 function renderCanvas(){
 
   const resumeText =
-    document.getElementById('resumeText').value;
+    document.getElementById(
+      'resumeText'
+    ).value;
 
   const reason =
-    document.getElementById('reason').value;
+    document.getElementById(
+      'reason'
+    ).value;
 
   const status =
-    document.getElementById('status').value;
+    document.getElementById(
+      'status'
+    ).value;
 
   const showResume =
-    document.getElementById('showResume').checked;
+    document.getElementById(
+      'showResume'
+    ).checked;
 
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.clearRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
 
   // 背景
   ctx.fillStyle = '#34343a';
-  ctx.fillRect(0,0,1400,760);
-
-  // 赤枠
-  ctx.strokeStyle = '#ff1f1f';
-  ctx.lineWidth = 18;
-
-  ctx.strokeRect(
-    9,
-    9,
-    canvas.width - 18,
-    canvas.height - 18
-  );
-
-  // 左灰色線
-  ctx.fillStyle = '#8f8f93';
 
   ctx.fillRect(
-    29,
     0,
-    11,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+  // 左灰色ライン
+  ctx.fillStyle = '#8d8d92';
+
+  ctx.fillRect(
+    30,
+    0,
+    10,
     760
+  );
+
+  // 赤枠
+  ctx.strokeStyle = '#ff2020';
+
+  ctx.lineWidth = 16;
+
+  ctx.strokeRect(
+    8,
+    8,
+    canvas.width - 16,
+    canvas.height - 16
   );
 
   // 警告マーク
@@ -244,43 +308,44 @@ function renderCanvas(){
     ctx.fillStyle = '#f4f4f4';
 
     ctx.font =
-      '500 45px "Yu Gothic UI","Yu Gothic",sans-serif';
+      '500 44px "Yu Gothic UI","Hiragino Sans",sans-serif';
 
     ctx.fillText(
       '運転再開見込み：' + resumeText,
-      450,
+      451,
       77
     );
 
   }
 
-  // メインタイトル
+  // タイトル
   ctx.fillStyle = '#f5f5f5';
 
   ctx.font =
-    'bold 108px "Yu Gothic UI","Yu Gothic",sans-serif';
+    '700 104px "Yu Gothic UI","Hiragino Sans",sans-serif';
 
   ctx.fillText(
     status,
-    400,
-    398
+    398,
+    395
   );
 
-  // 詳細文
+  // 本文
   ctx.fillStyle = '#f5f5f5';
 
   ctx.font =
-    '48px "Yu Gothic UI","Yu Gothic",sans-serif';
+    '48px "Yu Gothic UI","Hiragino Sans",sans-serif';
 
   const detail =
-    reason + 'の影響で運転を見合わせています。';
+    reason +
+    'の影響で運転を見合わせています。';
 
   wrapText(
     detail,
     182,
     520,
-    1040,
-    66
+    1045,
+    65
   );
 
 }
@@ -297,7 +362,9 @@ async function copyImage(){
         })
       ]);
 
-      alert('画像をコピーしました');
+      alert(
+        '画像をコピーしました'
+      );
 
     }catch(e){
 
