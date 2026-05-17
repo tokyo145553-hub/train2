@@ -1,25 +1,13 @@
-# 運転見合わせ画像ジェネレーター（GitHub Pages対応）
-
-以下の `index.html` をそのまま GitHub にアップロードすれば、
-ブラウザ上で
-
-* 「運転再開見込み」の表示ON/OFF
-* 「○○の影響で」の文章変更
-* 画像をワンクリックでコピー
-
-ができるようになります。
-
----
-
-```html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>運行情報画像ジェネレーター</title>
 
 <style>
+
 body{
   margin:0;
   padding:20px;
@@ -95,6 +83,7 @@ button:hover{
   font-size:13px;
   opacity:0.8;
 }
+
 </style>
 </head>
 <body>
@@ -127,7 +116,7 @@ button:hover{
 <button onclick="copyImage()">画像をコピー</button>
 
 <div class="small">
-スマホでも利用可能 / GitHub Pages対応
+スマホ対応 / GitHub Pages対応
 </div>
 
 </div>
@@ -137,12 +126,14 @@ button:hover{
 </div>
 
 <script>
+
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
 function drawTriangle(){
+
   ctx.strokeStyle = '#ff2a2a';
-  ctx.lineWidth = 8;
+  ctx.lineWidth = 10;
 
   ctx.beginPath();
   ctx.moveTo(220,220);
@@ -154,9 +145,11 @@ function drawTriangle(){
   ctx.fillStyle = '#ff2a2a';
   ctx.font = 'bold 90px sans-serif';
   ctx.fillText('!',205,390);
+
 }
 
 function renderCanvas(){
+
   const resumeText = document.getElementById('resumeText').value;
   const reason = document.getElementById('reason').value;
   const status = document.getElementById('status').value;
@@ -168,60 +161,83 @@ function renderCanvas(){
   ctx.fillStyle = '#333338';
   ctx.fillRect(0,0,canvas.width,canvas.height);
 
-  // 外側赤枠
+  // 赤枠（コピー画像にも含まれる）
   ctx.strokeStyle = '#ff1f1f';
-  ctx.lineWidth = 20;
-  ctx.strokeRect(0,0,canvas.width,canvas.height);
+  ctx.lineWidth = 18;
+  ctx.strokeRect(9,9,canvas.width-18,canvas.height-18);
 
-  // 左線
-  ctx.fillStyle = '#777';
+  // 左側ライン
+  ctx.fillStyle = '#888';
   ctx.fillRect(30,0,10,760);
 
+  // 警告マーク
   drawTriangle();
 
-  // 上部見込み
+  // 再開見込み
   if(showResume){
+
     ctx.fillStyle = '#fff';
     ctx.font = '48px sans-serif';
-    ctx.fillText('運転再開見込み：' + resumeText, 450, 80);
+
+    ctx.fillText(
+      '運転再開見込み：' + resumeText,
+      450,
+      80
+    );
+
   }
 
   // メインタイトル
   ctx.fillStyle = '#fff';
-  ctx.font = 'bold 100px sans-serif';
-  ctx.fillText(status, 400, 400);
+  ctx.font = 'bold 110px sans-serif';
 
-  // 詳細文
+  ctx.fillText(status,400,400);
+
+  // 詳細
   ctx.font = '56px sans-serif';
 
-  const detail = reason + 'の影響で運転を見合わせています。';
+  const detail =
+    reason + 'の影響で運転を見合わせています。';
 
-  wrapText(detail, 180, 520, 1000, 70);
+  wrapText(detail,180,520,1000,72);
+
 }
 
 function wrapText(text,x,y,maxWidth,lineHeight){
-  let line='';
+
+  let line = '';
 
   for(let i=0;i<text.length;i++){
+
     const testLine = line + text[i];
     const metrics = ctx.measureText(testLine);
     const testWidth = metrics.width;
 
     if(testWidth > maxWidth && i > 0){
+
       ctx.fillText(line,x,y);
+
       line = text[i];
       y += lineHeight;
+
     }else{
+
       line = testLine;
+
     }
+
   }
 
   ctx.fillText(line,x,y);
+
 }
 
 async function copyImage(){
+
   canvas.toBlob(async(blob)=>{
+
     try{
+
       await navigator.clipboard.write([
         new ClipboardItem({
           'image/png': blob
@@ -229,102 +245,21 @@ async function copyImage(){
       ]);
 
       alert('画像をコピーしました');
+
     }catch(e){
-      alert('コピーに失敗しました');
+
       console.error(e);
+      alert('コピーに失敗しました');
+
     }
+
   });
+
 }
 
 renderCanvas();
+
 </script>
 
 </body>
 </html>
-```
-
----
-
-# GitHub Pagesで公開する方法
-
-1. GitHubで新しいリポジトリを作成
-2. `index.html` をアップロード
-3. 「Settings」→「Pages」
-4. Branch を `main` に設定
-5. Save
-
-数十秒後に公開URLが発行されます。
-
----
-
-# できること
-
-* 運転再開見込みの表示ON/OFF
-* 運転再開見込み時刻の変更
-* 原因変更
-
-  * 信号装置故障
-  * 人身事故
-  * 車両故障
-  * 異音確認
-    など
-* 状態変更
-
-  * 運転見合わせ
-  * 遅延
-  * 再開見込み変更
-    など
-* スマホ対応
-* 画像コピー
-* PowerPoint貼り付け対応
-
----
-
-# 追加済み仕様
-
-すでにコード内には以下が実装されています。
-
-## 再開見込み ON/OFF
-
-```html
-<input type="checkbox" id="showResume" checked>
-```
-
-チェックを外すと、
-
-```text
-運転再開見込み：20時30分頃
-```
-
-の表示が消えます。
-
----
-
-## 再開見込み時刻変更
-
-```html
-<input type="text" id="resumeText" value="20時30分頃">
-```
-
-ここを書き換えることで
-
-* 21時頃
-* 未定
-* 調査中
-* まもなく再開見込み
-
-など自由に変更できます。
-
----
-
-## 表示ロジック
-
-```javascript
-if(showResume){
-  ctx.fillStyle = '#fff';
-  ctx.font = '48px sans-serif';
-  ctx.fillText('運転再開見込み：' + resumeText, 450, 80);
-}
-```
-
-これにより、チェックONの時だけ表示されます。
