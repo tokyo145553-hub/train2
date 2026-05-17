@@ -13,31 +13,37 @@ body{
   padding:20px;
   background:#111;
   color:#fff;
-  font-family:"Hiragino Sans","Yu Gothic",sans-serif;
-}
-
-h1{
-  margin-top:0;
+  font-family:
+    "Hiragino Sans",
+    "Yu Gothic UI",
+    "Yu Gothic",
+    sans-serif;
 }
 
 .controls{
-  max-width:700px;
+  max-width:720px;
   margin:auto;
   display:flex;
   flex-direction:column;
   gap:12px;
 }
 
+h1{
+  margin:0 0 10px;
+  font-size:28px;
+}
+
 label{
   font-size:14px;
 }
 
-input,button{
+input,
+button{
   width:100%;
   box-sizing:border-box;
   padding:12px;
   border:none;
-  border-radius:8px;
+  border-radius:10px;
   font-size:16px;
 }
 
@@ -57,18 +63,6 @@ button:hover{
   opacity:0.9;
 }
 
-.preview-wrap{
-  margin-top:24px;
-  display:flex;
-  justify-content:center;
-}
-
-#canvas{
-  width:100%;
-  max-width:700px;
-  background:#333;
-}
-
 .checkbox-row{
   display:flex;
   align-items:center;
@@ -77,6 +71,18 @@ button:hover{
 
 .checkbox-row input{
   width:auto;
+}
+
+.preview-wrap{
+  margin-top:24px;
+  display:flex;
+  justify-content:center;
+}
+
+#canvas{
+  width:100%;
+  max-width:780px;
+  background:#333;
 }
 
 .small{
@@ -99,7 +105,9 @@ button:hover{
 
 <div class="checkbox-row">
 <input type="checkbox" id="showResume" checked>
-<label for="showResume">運転再開見込みを表示する</label>
+<label for="showResume">
+運転再開見込みを表示する
+</label>
 </div>
 
 <label>
@@ -112,8 +120,13 @@ button:hover{
 <input type="text" id="status" value="運転見合わせ">
 </label>
 
-<button onclick="renderCanvas()">画像更新</button>
-<button onclick="copyImage()">画像をコピー</button>
+<button onclick="renderCanvas()">
+画像更新
+</button>
+
+<button onclick="copyImage()">
+画像をコピー
+</button>
 
 <div class="small">
 スマホ対応 / GitHub Pages対応
@@ -133,87 +146,36 @@ const ctx = canvas.getContext('2d');
 function drawTriangle(){
 
   ctx.strokeStyle = '#ff2a2a';
-  ctx.lineWidth = 10;
+  ctx.lineWidth = 8;
 
   ctx.beginPath();
-  ctx.moveTo(220,220);
-  ctx.lineTo(100,450);
-  ctx.lineTo(340,450);
+
+  ctx.moveTo(218,215);
+  ctx.lineTo(98,447);
+  ctx.lineTo(338,447);
+
   ctx.closePath();
   ctx.stroke();
 
   ctx.fillStyle = '#ff2a2a';
-  ctx.font = 'bold 90px sans-serif';
-  ctx.fillText('!',205,390);
 
-}
+  ctx.font =
+    'bold 92px "Yu Gothic UI","Yu Gothic",sans-serif';
 
-function renderCanvas(){
-
-  const resumeText = document.getElementById('resumeText').value;
-  const reason = document.getElementById('reason').value;
-  const status = document.getElementById('status').value;
-  const showResume = document.getElementById('showResume').checked;
-
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  // 背景
-  ctx.fillStyle = '#333338';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-
-  // 赤枠（コピー画像にも含まれる）
-  ctx.strokeStyle = '#ff1f1f';
-  ctx.lineWidth = 18;
-  ctx.strokeRect(9,9,canvas.width-18,canvas.height-18);
-
-  // 左側ライン
-  ctx.fillStyle = '#888';
-  ctx.fillRect(30,0,10,760);
-
-  // 警告マーク
-  drawTriangle();
-
-  // 再開見込み
-  if(showResume){
-
-    ctx.fillStyle = '#fff';
-    ctx.font = '48px sans-serif';
-
-    ctx.fillText(
-      '運転再開見込み：' + resumeText,
-      450,
-      80
-    );
-
-  }
-
-  // メインタイトル
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 110px sans-serif';
-
-  ctx.fillText(status,400,400);
-
-  // 詳細
-  ctx.font = '56px sans-serif';
-
-  const detail =
-    reason + 'の影響で運転を見合わせています。';
-
-  wrapText(detail,180,520,1000,72);
+  ctx.fillText('!',205,388);
 
 }
 
 function wrapText(text,x,y,maxWidth,lineHeight){
 
-  let line = '';
+  let line='';
 
   for(let i=0;i<text.length;i++){
 
     const testLine = line + text[i];
-    const metrics = ctx.measureText(testLine);
-    const testWidth = metrics.width;
+    const width = ctx.measureText(testLine).width;
 
-    if(testWidth > maxWidth && i > 0){
+    if(width > maxWidth && i > 0){
 
       ctx.fillText(line,x,y);
 
@@ -229,6 +191,97 @@ function wrapText(text,x,y,maxWidth,lineHeight){
   }
 
   ctx.fillText(line,x,y);
+
+}
+
+function renderCanvas(){
+
+  const resumeText =
+    document.getElementById('resumeText').value;
+
+  const reason =
+    document.getElementById('reason').value;
+
+  const status =
+    document.getElementById('status').value;
+
+  const showResume =
+    document.getElementById('showResume').checked;
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // 背景
+  ctx.fillStyle = '#34343a';
+  ctx.fillRect(0,0,1400,760);
+
+  // 赤枠
+  ctx.strokeStyle = '#ff1f1f';
+  ctx.lineWidth = 18;
+
+  ctx.strokeRect(
+    9,
+    9,
+    canvas.width - 18,
+    canvas.height - 18
+  );
+
+  // 左灰色線
+  ctx.fillStyle = '#8f8f93';
+
+  ctx.fillRect(
+    29,
+    0,
+    11,
+    760
+  );
+
+  // 警告マーク
+  drawTriangle();
+
+  // 再開見込み
+  if(showResume){
+
+    ctx.fillStyle = '#f4f4f4';
+
+    ctx.font =
+      '500 45px "Yu Gothic UI","Yu Gothic",sans-serif';
+
+    ctx.fillText(
+      '運転再開見込み：' + resumeText,
+      450,
+      77
+    );
+
+  }
+
+  // メインタイトル
+  ctx.fillStyle = '#f5f5f5';
+
+  ctx.font =
+    'bold 108px "Yu Gothic UI","Yu Gothic",sans-serif';
+
+  ctx.fillText(
+    status,
+    400,
+    398
+  );
+
+  // 詳細文
+  ctx.fillStyle = '#f5f5f5';
+
+  ctx.font =
+    '48px "Yu Gothic UI","Yu Gothic",sans-serif';
+
+  const detail =
+    reason + 'の影響で運転を見合わせています。';
+
+  wrapText(
+    detail,
+    182,
+    520,
+    1040,
+    66
+  );
 
 }
 
@@ -249,7 +302,10 @@ async function copyImage(){
     }catch(e){
 
       console.error(e);
-      alert('コピーに失敗しました');
+
+      alert(
+        'コピーに失敗しました'
+      );
 
     }
 
