@@ -5,13 +5,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>運行情報画像ジェネレーター</title>
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+
 <style>
 body{
   margin:0;
   padding:20px;
   background:#111;
   color:#fff;
-  font-family:"Yu Gothic UI","Hiragino Sans","Yu Gothic","Meiryo",sans-serif;
+  font-family:"Noto Sans JP",sans-serif;
 }
 
 .controls{
@@ -39,6 +43,7 @@ button{
   border:none;
   border-radius:10px;
   font-size:16px;
+  font-family:"Noto Sans JP",sans-serif;
 }
 
 input{
@@ -49,7 +54,7 @@ input{
 button{
   background:#e11d2e;
   color:#fff;
-  font-weight:bold;
+  font-weight:700;
   cursor:pointer;
 }
 
@@ -75,8 +80,8 @@ button:hover{
 
 #canvas{
   width:100%;
-  max-width:900px;
-  background:#34343a;
+  max-width:1024px;
+  background:#37373c;
   display:block;
 }
 
@@ -89,7 +94,6 @@ button:hover{
 <body>
 
 <div class="controls">
-
   <h1>運行情報画像ジェネレーター</h1>
 
   <label>
@@ -119,65 +123,127 @@ button:hover{
 </div>
 
 <div class="preview-wrap">
-  <canvas id="canvas" width="1280" height="720"></canvas>
+  <canvas id="canvas" width="1024" height="576"></canvas>
 </div>
 
 <script>
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
-function fitFontSize(text, maxWidth, startSize, weight = 700){
-  let size = startSize;
-  while(size > 10){
-    ctx.font = `${weight} ${size}px "Yu Gothic UI","Hiragino Sans","Yu Gothic","Meiryo",sans-serif`;
-    if(ctx.measureText(text).width <= maxWidth) return size;
-    size -= 2;
-  }
-  return size;
+function setFont(weight, size){
+  ctx.font = `${weight} ${size}px "Noto Sans JP", sans-serif`;
 }
 
-function wrapText(text, x, y, maxWidth, lineHeight){
+function textWidthTracked(text, tracking = 0){
+  let width = 0;
+  for(let i = 0; i < text.length; i++){
+    width += ctx.measureText(text[i]).width;
+    if(i < text.length - 1) width += tracking;
+  }
+  return width;
+}
+
+function drawTrackedText(text, x, y, tracking = 0){
+  let cx = x;
+  for(let i = 0; i < text.length; i++){
+    const ch = text[i];
+    ctx.fillText(ch, cx, y);
+    cx += ctx.measureText(ch).width + tracking;
+  }
+}
+
+function drawTrackedCentered(text, centerX, y, tracking = 0){
+  const w = textWidthTracked(text, tracking);
+  drawTrackedText(text, centerX - w / 2, y, tracking);
+}
+
+function wrapText(text, x, y, maxWidth, lineHeight, tracking = 0){
   let line = '';
-  const lines = [];
+  let lines = [];
 
   for(let i = 0; i < text.length; i++){
-    const testLine = line + text[i];
-    const width = ctx.measureText(testLine).width;
-
-    if(width > maxWidth && line !== ''){
+    const test = line + text[i];
+    const width = textWidthTracked(test, tracking);
+    if(width > maxWidth && line){
       lines.push(line);
       line = text[i];
     }else{
-      line = testLine;
+      line = test;
     }
   }
-
   if(line) lines.push(line);
 
-  lines.forEach((l, index) => {
-    ctx.fillText(l, x, y + lineHeight * index);
+  lines.forEach((lineText, index) => {
+    drawTrackedText(lineText, x, y + index * lineHeight, tracking);
   });
 }
 
-function drawTriangle(x, y, size){
-  const h = size * 0.92;
-
-  ctx.save();
-  ctx.strokeStyle = '#ff2b2b';
-  ctx.lineWidth = 6;
+function roundRect(ctx, x, y, w, h, r){
   ctx.beginPath();
-  ctx.moveTo(x + size / 2, y);
-  ctx.lineTo(x, y + h);
-  ctx.lineTo(x + size, y + h);
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function drawTriangle(){
+  ctx.save();
+  ctx.strokeStyle = '#ff2a2a';
+  ctx.lineWidth = 5.5;
+  ctx.lineJoin = 'miter';
+
+  ctx.beginPath();
+  ctx.moveTo(139, 173);
+  ctx.lineTo(75, 341);
+  ctx.lineTo(267, 341);
   ctx.closePath();
   ctx.stroke();
 
-  ctx.fillStyle = '#ff2b2b';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.font = `700 ${Math.floor(size * 0.42)}px "Yu Gothic UI","Hiragino Sans","Yu Gothic","Meiryo",sans-serif`;
-  ctx.fillText('!', x + size / 2, y + h * 0.58);
+  // 感嘆符の棒
+  ctx.fillStyle = '#ff2a2a';
+  roundRect(ctx, 165, 241, 10, 47, 4);
+  ctx.fill();
+
+  // 感嘆符の点
+  ctx.beginPath();
+  ctx.arc(170, 308, 6, 0, Math.PI * 2);
+  ctx.fill();
+
   ctx.restore();
+}
+
+function drawFrame(){
+  const w = canvas.width;
+  const h = canvas.height;
+  const t = 14;
+
+  ctx.fillStyle = '#ef1f24';
+
+  // 上
+  ctx.fillRect(0, 0, w, t);
+  // 下
+  ctx.fillRect(0, h - t, w, t);
+  // 左
+  ctx.fillRect(0, 0, t, h);
+  // 右
+  ctx.fillRect(w - t, 0, t, h);
+}
+
+function drawLeftBar(){
+  ctx.fillStyle = '#8b8b90';
+  ctx.fillRect(16, 14, 22, canvas.height - 28);
+}
+
+function fitFontSizeTracked(text, maxWidth, startSize, weight, tracking){
+  for(let size = startSize; size >= 10; size--){
+    setFont(weight, size);
+    if(textWidthTracked(text, tracking) <= maxWidth){
+      return size;
+    }
+  }
+  return 10;
 }
 
 function renderCanvas(){
@@ -186,67 +252,61 @@ function renderCanvas(){
   const status = document.getElementById('status').value.trim();
   const showResume = document.getElementById('showResume').checked;
 
-  const w = canvas.width;
-  const h = canvas.height;
-
-  ctx.clearRect(0, 0, w, h);
-
   // 背景
-  ctx.fillStyle = '#3a3a3f';
-  ctx.fillRect(0, 0, w, h);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#37373c';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // 左の灰色バー
-  ctx.fillStyle = '#8d8d92';
-  ctx.fillRect(18, 8, 26, h - 16);
+  // 左灰色バー
+  drawLeftBar();
 
   // 赤枠
-  ctx.strokeStyle = '#ff2020';
-  ctx.lineWidth = 16;
-  ctx.strokeRect(8, 8, w - 16, h - 16);
+  drawFrame();
 
-  // 上部テキスト
+  // 上部見出し
   if(showResume && resumeText){
     ctx.save();
-    ctx.fillStyle = '#f2f2f2';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'alphabetic';
-    ctx.font = '500 36px "Yu Gothic UI","Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
-    ctx.fillText(`運転再開見込み：${resumeText}`, w / 2 + 40, 70);
+    ctx.fillStyle = '#f3f3f3';
+    ctx.textBaseline = 'middle';
+    setFont(500, 28);
+    drawTrackedCentered(`運転再開見込み：${resumeText}`, 637, 55, 0);
     ctx.restore();
   }
 
   // 警告マーク
-  drawTriangle(88, 205, 245);
+  drawTriangle();
 
-  // タイトル
-  const titleMaxWidth = 760;
-  const titleSize = fitFontSize(status, titleMaxWidth, 94, 700);
-
+  // 大見出し
   ctx.save();
   ctx.fillStyle = '#f5f5f5';
-  ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
-  ctx.font = `700 ${titleSize}px "Yu Gothic UI","Hiragino Sans","Yu Gothic","Meiryo",sans-serif`;
-  ctx.fillText(status, 390, 350);
+
+  const titleTracking = -1.5;
+  const titleSize = fitFontSizeTracked(status, 560, 76, 700, titleTracking);
+  setFont(700, titleSize);
+  drawTrackedText(status, 308, 272, titleTracking);
+
   ctx.restore();
 
   // 本文
-  const detail = `${reason}の影響で運転を見合わせています。`;
-
   ctx.save();
-  ctx.fillStyle = '#f5f5f5';
-  ctx.textAlign = 'left';
+  ctx.fillStyle = '#f2f2f2';
   ctx.textBaseline = 'alphabetic';
-  ctx.font = '48px "Yu Gothic UI","Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
-  wrapText(detail, 170, 505, 980, 62);
+  setFont(400, 34);
+
+  const detail = `${reason}の影響で運転を見合わせています。`;
+  wrapText(detail, 146, 395, 760, 46, 0);
+
   ctx.restore();
 }
 
 async function copyImage(){
-  canvas.toBlob(async (blob) => {
+  canvas.toBlob(async(blob)=>{
     try{
       await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': blob })
+        new ClipboardItem({
+          'image/png': blob
+        })
       ]);
       alert('画像をコピーしました');
     }catch(e){
@@ -256,7 +316,7 @@ async function copyImage(){
   });
 }
 
-renderCanvas();
+document.fonts.ready.then(renderCanvas);
 </script>
 
 </body>
