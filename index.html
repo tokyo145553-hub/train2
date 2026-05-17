@@ -3,20 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 <title>運行情報画像ジェネレーター</title>
 
 <style>
-
 body{
   margin:0;
   padding:20px;
   background:#111;
   color:#fff;
-  font-family:
-    "Yu Gothic UI",
-    "Hiragino Sans",
-    sans-serif;
+  font-family:"Yu Gothic UI","Hiragino Sans","Yu Gothic","Meiryo",sans-serif;
 }
 
 .controls{
@@ -80,308 +75,188 @@ button:hover{
 
 #canvas{
   width:100%;
-  max-width:820px;
+  max-width:900px;
   background:#34343a;
+  display:block;
 }
 
 .small{
   font-size:13px;
   opacity:0.8;
 }
-
 </style>
 </head>
 <body>
 
 <div class="controls">
 
-<h1>運行情報画像ジェネレーター</h1>
+  <h1>運行情報画像ジェネレーター</h1>
 
-<label>
-運転再開見込み
-<input
-  type="text"
-  id="resumeText"
-  value="20時30分頃">
-</label>
+  <label>
+    運転再開見込み
+    <input type="text" id="resumeText" value="20時50分頃">
+  </label>
 
-<div class="checkbox-row">
+  <div class="checkbox-row">
+    <input type="checkbox" id="showResume" checked>
+    <label for="showResume">運転再開見込みを表示する</label>
+  </div>
 
-<input
-  type="checkbox"
-  id="showResume"
-  checked>
+  <label>
+    原因
+    <input type="text" id="reason" value="沿線火災">
+  </label>
 
-<label for="showResume">
-運転再開見込みを表示する
-</label>
+  <label>
+    状態
+    <input type="text" id="status" value="運転見合わせ">
+  </label>
 
-</div>
+  <button onclick="renderCanvas()">画像更新</button>
+  <button onclick="copyImage()">画像をコピー</button>
 
-<label>
-原因
-<input
-  type="text"
-  id="reason"
-  value="信号装置故障">
-</label>
-
-<label>
-状態
-<input
-  type="text"
-  id="status"
-  value="運転見合わせ">
-</label>
-
-<button onclick="renderCanvas()">
-画像更新
-</button>
-
-<button onclick="copyImage()">
-画像をコピー
-</button>
-
-<div class="small">
-スマホ対応 / GitHub Pages対応
-</div>
-
+  <div class="small">スマホ対応 / GitHub Pages対応</div>
 </div>
 
 <div class="preview-wrap">
-<canvas
-  id="canvas"
-  width="1400"
-  height="760">
-</canvas>
+  <canvas id="canvas" width="1280" height="720"></canvas>
 </div>
 
 <script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
 
-const canvas =
-  document.getElementById('canvas');
+function fitFontSize(text, maxWidth, startSize, weight = 700){
+  let size = startSize;
+  while(size > 10){
+    ctx.font = `${weight} ${size}px "Yu Gothic UI","Hiragino Sans","Yu Gothic","Meiryo",sans-serif`;
+    if(ctx.measureText(text).width <= maxWidth) return size;
+    size -= 2;
+  }
+  return size;
+}
 
-const ctx =
-  canvas.getContext('2d');
+function wrapText(text, x, y, maxWidth, lineHeight){
+  let line = '';
+  const lines = [];
 
-function drawTriangle(){
+  for(let i = 0; i < text.length; i++){
+    const testLine = line + text[i];
+    const width = ctx.measureText(testLine).width;
 
+    if(width > maxWidth && line !== ''){
+      lines.push(line);
+      line = text[i];
+    }else{
+      line = testLine;
+    }
+  }
+
+  if(line) lines.push(line);
+
+  lines.forEach((l, index) => {
+    ctx.fillText(l, x, y + lineHeight * index);
+  });
+}
+
+function drawTriangle(x, y, size){
+  const h = size * 0.92;
+
+  ctx.save();
   ctx.strokeStyle = '#ff2b2b';
-  ctx.lineWidth = 7.5;
-
+  ctx.lineWidth = 6;
   ctx.beginPath();
-
-  ctx.moveTo(218,214);
-  ctx.lineTo(101,445);
-  ctx.lineTo(335,445);
-
+  ctx.moveTo(x + size / 2, y);
+  ctx.lineTo(x, y + h);
+  ctx.lineTo(x + size, y + h);
   ctx.closePath();
-
   ctx.stroke();
 
   ctx.fillStyle = '#ff2b2b';
-
-  ctx.font =
-    '700 90px "Yu Gothic UI","Hiragino Sans",sans-serif';
-
-  ctx.fillText(
-    '!',
-    203,
-    387
-  );
-
-}
-
-function wrapText(
-  text,
-  x,
-  y,
-  maxWidth,
-  lineHeight
-){
-
-  let line='';
-
-  for(let i=0;i<text.length;i++){
-
-    const testLine =
-      line + text[i];
-
-    const width =
-      ctx.measureText(testLine).width;
-
-    if(width > maxWidth && i > 0){
-
-      ctx.fillText(
-        line,
-        x,
-        y
-      );
-
-      line = text[i];
-
-      y += lineHeight;
-
-    }else{
-
-      line = testLine;
-
-    }
-
-  }
-
-  ctx.fillText(
-    line,
-    x,
-    y
-  );
-
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = `700 ${Math.floor(size * 0.42)}px "Yu Gothic UI","Hiragino Sans","Yu Gothic","Meiryo",sans-serif`;
+  ctx.fillText('!', x + size / 2, y + h * 0.58);
+  ctx.restore();
 }
 
 function renderCanvas(){
+  const resumeText = document.getElementById('resumeText').value.trim();
+  const reason = document.getElementById('reason').value.trim();
+  const status = document.getElementById('status').value.trim();
+  const showResume = document.getElementById('showResume').checked;
 
-  const resumeText =
-    document.getElementById(
-      'resumeText'
-    ).value;
+  const w = canvas.width;
+  const h = canvas.height;
 
-  const reason =
-    document.getElementById(
-      'reason'
-    ).value;
-
-  const status =
-    document.getElementById(
-      'status'
-    ).value;
-
-  const showResume =
-    document.getElementById(
-      'showResume'
-    ).checked;
-
-  ctx.clearRect(
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  );
+  ctx.clearRect(0, 0, w, h);
 
   // 背景
-  ctx.fillStyle = '#34343a';
+  ctx.fillStyle = '#3a3a3f';
+  ctx.fillRect(0, 0, w, h);
 
-  ctx.fillRect(
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  );
-
-  // 左灰色ライン
+  // 左の灰色バー
   ctx.fillStyle = '#8d8d92';
-
-  ctx.fillRect(
-    30,
-    0,
-    10,
-    760
-  );
+  ctx.fillRect(18, 8, 26, h - 16);
 
   // 赤枠
   ctx.strokeStyle = '#ff2020';
-
   ctx.lineWidth = 16;
+  ctx.strokeRect(8, 8, w - 16, h - 16);
 
-  ctx.strokeRect(
-    8,
-    8,
-    canvas.width - 16,
-    canvas.height - 16
-  );
-
-  // 警告マーク
-  drawTriangle();
-
-  // 再開見込み
-  if(showResume){
-
-    ctx.fillStyle = '#f4f4f4';
-
-    ctx.font =
-      '500 44px "Yu Gothic UI","Hiragino Sans",sans-serif';
-
-    ctx.fillText(
-      '運転再開見込み：' + resumeText,
-      451,
-      77
-    );
-
+  // 上部テキスト
+  if(showResume && resumeText){
+    ctx.save();
+    ctx.fillStyle = '#f2f2f2';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.font = '500 36px "Yu Gothic UI","Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    ctx.fillText(`運転再開見込み：${resumeText}`, w / 2 + 40, 70);
+    ctx.restore();
   }
 
+  // 警告マーク
+  drawTriangle(88, 205, 245);
+
   // タイトル
+  const titleMaxWidth = 760;
+  const titleSize = fitFontSize(status, titleMaxWidth, 94, 700);
+
+  ctx.save();
   ctx.fillStyle = '#f5f5f5';
-
-  ctx.font =
-    '700 104px "Yu Gothic UI","Hiragino Sans",sans-serif';
-
-  ctx.fillText(
-    status,
-    398,
-    395
-  );
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.font = `700 ${titleSize}px "Yu Gothic UI","Hiragino Sans","Yu Gothic","Meiryo",sans-serif`;
+  ctx.fillText(status, 390, 350);
+  ctx.restore();
 
   // 本文
+  const detail = `${reason}の影響で運転を見合わせています。`;
+
+  ctx.save();
   ctx.fillStyle = '#f5f5f5';
-
-  ctx.font =
-    '48px "Yu Gothic UI","Hiragino Sans",sans-serif';
-
-  const detail =
-    reason +
-    'の影響で運転を見合わせています。';
-
-  wrapText(
-    detail,
-    182,
-    520,
-    1045,
-    65
-  );
-
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  ctx.font = '48px "Yu Gothic UI","Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+  wrapText(detail, 170, 505, 980, 62);
+  ctx.restore();
 }
 
 async function copyImage(){
-
-  canvas.toBlob(async(blob)=>{
-
+  canvas.toBlob(async (blob) => {
     try{
-
       await navigator.clipboard.write([
-        new ClipboardItem({
-          'image/png': blob
-        })
+        new ClipboardItem({ 'image/png': blob })
       ]);
-
-      alert(
-        '画像をコピーしました'
-      );
-
+      alert('画像をコピーしました');
     }catch(e){
-
       console.error(e);
-
-      alert(
-        'コピーに失敗しました'
-      );
-
+      alert('コピーに失敗しました');
     }
-
   });
-
 }
 
 renderCanvas();
-
 </script>
 
 </body>
